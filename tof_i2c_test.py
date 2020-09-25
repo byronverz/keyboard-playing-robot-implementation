@@ -9,18 +9,18 @@ import time
 #     # byte = i2c.readU8
 
 mySensor = qwiic_vl53l1x.QwiicVL53L1X(address = 0x29)
-mySensor.set_distance_mode(1)
+mySensor.set_distance_mode(2)
 print(mySensor.sensor_init())
 if (mySensor.sensor_init() == None):
     print("Sensor online")
-
+mySensor.set_roi(8,8)
 start = time.time()
 timer = 0.0    
-while timer<3.0:
+while True:
     mySensor.start_ranging()
-    time.sleep(.005)
+    time.sleep(.015)
     distance = mySensor.get_distance()
-    time.sleep(.005)
+    time.sleep(.015)
     mySensor.stop_ranging()
     timer = time.time() - start
     
