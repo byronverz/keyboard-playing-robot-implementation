@@ -6,9 +6,8 @@ import qwiic_vl53l1x
 import random
 
 
-
 class Gantry:
-    def __init__(self, calibrate_k = 1, sensor_address = 0x29, stepper_pwm = 'P8_13', en_pin = 'P8_7', dir_pin = 'P8_8'):
+    def __init__(self, calibrate_k = 1, sensor_address = 0x29, stepper_pwm = 'P8_13', en_pin = 'P8_7', dir_pin = 'P8_8', servo='P9_14'):
         self.calibration_key = calibrate_k
         self.previous_key = 0
         self.mySensor = qwiic_vl53l1x.QwiicVL53L1X(address = sensor_address)
@@ -16,14 +15,18 @@ class Gantry:
         self.pwm_pin = stepper_pwm
         self.enable = en_pin
         self.direction = dir_pin
-        self.home_set_point = 600.0   #make this a calculation from key to distance
-        self.max_freq = 2000.0
+        self.servo_pin = servo
+        self.home_set_point = 500.0   #make this a calculation from key to distance
+        self.max_freq = 1000.0
         self.last = 0
+        self.up_angle = 0.0008
+        self.press_angle = 0.0022
         
         GPIO.setup(self.direction, GPIO.OUT)
         GPIO.setup(self.enable, GPIO.OUT)
+
         GPIO.output(self.enable,GPIO.LOW)
-        
+        PWM.start(self.servo_pin,6,50)
 
         print(self.mySensor.sensor_init())
         if (self.mySensor.sensor_init() == None):
@@ -89,6 +92,13 @@ class Gantry:
         PWM.stop(self.pwm_pin)
         self.last = set_point
         
+        
+    def press_key(self, duration):
+        PWM.set_duty_cycle(self.servo_pin,2)
+        time.sleep(duration)
+        PWM.set_duty_cycle(self.servo_pin,11)
+        
+        
     def distance_to_move_calc(self,key_list):
         # prev_set = self.last
         distance_to_move = []
@@ -104,8 +114,8 @@ class Gantry:
 def main():
     g = Gantry()
     # keys = random.sample(range(1,25), 10)
-    keys = [1,25,2,24,3,23,4,22,5,21,6,20,7,19,8,18,9,17,10,16,11,15,12,14,13]
-    dist_arr = g.distance_to_move_calc(keys)
+    # keys = [1,25,2,24,3,23,4,22,5,21,6,20,7,19,8,18,9,17,10,16,11,15,12,14,13]
+    # dist_arr = g.distance_to_move_calc(keys)
     # print("Keys: {}\t Distances:{}\t".format(keys,dist_arr))
     while True:
         g.mySensor.start_ranging()
@@ -115,6 +125,8 @@ def main():
         g.mySensor.stop_ranging()
         d = input("Distance to move to?:")
         g.step_function(float(d),sensor_distance)
+        g.press_key(0.25)
+
     
     # for d,k in zip(dist_arr,keys):
         # print("Key: {} \t Distance: {}".format(k,d))
