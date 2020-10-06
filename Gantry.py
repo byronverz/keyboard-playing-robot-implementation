@@ -59,7 +59,7 @@ class Gantry:
         prev_freq = 0
         error = distance - set_point
         frequency = self.max_freq*np.tanh(np.abs(error))
-        print("Error: {}\tFrequency: {}".format(error,frequency))
+        print("Error: {}".format(error))
         if error<0:
             print("Moving right")
             GPIO.output(self.direction, GPIO.LOW)
@@ -91,6 +91,7 @@ class Gantry:
         
         PWM.stop(self.pwm_pin)
         self.last = set_point
+        self.press_key(.25)
         
         
     def press_key(self, duration):
@@ -113,6 +114,9 @@ class Gantry:
             
 def main():
     g = Gantry()
+    with open("key_list.csv",'r') as key_file:
+        keys = np.genfromtxt(key_file, delimiter=',')
+    print(keys)
     # keys = random.sample(range(1,25), 10)
     # keys = [1,25,2,24,3,23,4,22,5,21,6,20,7,19,8,18,9,17,10,16,11,15,12,14,13]
     # dist_arr = g.distance_to_move_calc(keys)
@@ -125,15 +129,15 @@ def main():
         g.mySensor.stop_ranging()
         d = input("Distance to move to?:")
         g.step_function(float(d),sensor_distance)
-        g.press_key(0.25)
+        # g.press_key(0.25)
 
     
-    # for d,k in zip(dist_arr,keys):
-        # print("Key: {} \t Distance: {}".format(k,d))
-        # g.mySensor.start_ranging()
-        # sensor_distance = g.mySensor.get_distance()
-        # g.mySensor.stop_ranging()
-        # g.step_function(d,sensor_distance)
+    for d,k in zip(dist_arr,keys):
+        print("Key: {} \t Distance: {}".format(k,d))
+        g.mySensor.start_ranging()
+        sensor_distance = g.mySensor.get_distance()
+        g.mySensor.stop_ranging()
+        g.step_function(d,sensor_distance)
 if __name__ == "__main__":
     main()
                
