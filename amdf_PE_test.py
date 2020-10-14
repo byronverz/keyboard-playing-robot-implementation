@@ -80,7 +80,7 @@ print("Frequency array of length {}: \n{}".format(len(freqs_arr),freqs_arr))
 # print("Minimum index array: \n {}".format(mins))
 print("Volume array: \n {}".format(vols_arr))
 keys = np.zeros_like(freqs_arr)
-keys = np.rint(12*np.log2(freqs_arr/440)+28) # 36 must be changed to actual key number offset
+keys = np.rint(12*np.log2(freqs_arr/440)-2) # 36 must be changed to actual key number offset
 # vol_angles = 180*vols_arr
 
 print("Key number array of length {}: {}".format(len(keys),keys))

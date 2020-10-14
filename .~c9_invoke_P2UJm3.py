@@ -16,19 +16,17 @@ class Gantry:
         self.enable = en_pin
         self.direction = dir_pin
         self.servo_pin = servo
-        self.home_set_point = (calibrate_k*12.60830769)+346.90830769   #make this a calculation from key to distance
-        self.max_freq = 1250.0
+        self.home_set_point = (calibrate_k*22.5)+360   #make this a calculation from key to distance
+        self.max_freq = 1000.0
         self.last = 0
         self.up_angle = 0.0008
         self.press_angle = 0.0022
-        self.KEY_CONST = 12.5
-        self.theta_m = 0.45*(np.pi/180)
-        self.radius = 20
+        
         GPIO.setup(self.direction, GPIO.OUT)
         GPIO.setup(self.enable, GPIO.OUT)
 
         GPIO.output(self.enable,GPIO.LOW)
-        # PWM.start(self.servo_pin,6,50)
+        PWM.start(self.servo_pin,6,50)
 
         print(self.mySensor.sensor_init())
         if (self.mySensor.sensor_init() == None):
@@ -62,14 +60,11 @@ class Gantry:
         prev_freq = 0
         error = distance - set_point
         frequency = self.max_freq*np.tanh(np.abs(error))
-        # frequency = self.max_freq
         print("Error: {}".format(error))
         if error<0:
-            dir_bool = False
             print("Moving right")
             GPIO.output(self.direction, GPIO.LOW)
         elif error>0:
-            dir_bool = True
             print("Moving left")
             GPIO.output(self.direction, GPIO.HIGH)
         if (np.abs(prev_freq-frequency))>2000.0:
@@ -83,17 +78,16 @@ class Gantry:
             except:
                 pass
             
-        while np.abs(error) > 2.0:
+        while np.abs(error) > 5.0:
             out_arr.append(error)
             self.mySensor.start_ranging()
-            # time.sleep(0.015)
+            time.sleep(0.015)
             distance = self.mySensor.get_distance()
             # time.sleep(0.005)
             self.mySensor.stop_ranging()
             # print("Distance:\t{}".format(distance))
             error = distance - set_point
             frequency = self.max_freq*np.tanh(0.008*np.abs(error))
-            # frequency = self.max_freq
             try:
                 PWM.set_frequency(self.pwm_pin, frequency)
             except:
@@ -101,7 +95,7 @@ class Gantry:
         
         PWM.stop(self.pwm_pin)
         self.last = set_point
-        # self.press_key(.25)
+        self.press_key(.25)
         return out_arr
         
         
@@ -116,50 +110,27 @@ class Gantry:
         distance_to_move = []
         # direction = []
         for k in key_list:
-            distance_to_move.append((k*12.60830769)+346.90830769)
+            distance_to_move.append((k*22.5)+360)
             # self.prev_set = temp
         return distance_to_move
-    
-    def time_to_move(self, key_list):
-        for k in key_list:
-            print("Moving to key: {}".format(k))
-            t = (self.KEY_CONST*(k - self.previous_key))/(self.max_freq*self.theta_m*self.radius)
-            print(t)
-            if t<0:
-                print("Moving left")
-                GPIO.output(self.direction, GPIO.HIGH) 
-            elif t>0:
-                print("Moving right")
-                GPIO.output(self.direction,GPIO.LOW)
-            PWM.start(self.pwm_pin,50, self.max_freq)
-            time.sleep(np.abs(t))
-            PWM.stop(self.pwm_pin)
-            self.previous_key = k
         
             
             
 def main():
     g = Gantry()
-    step_test = [1,10]
-    dist = g.time_to_move(step_test)
-    # step_results = []
-    # for d in dist:
-        # nxt = input("Next key?: ")
-        # if nxt == 'y':
-            # pass
-        # else:
-            # return
-        # g.mySensor.start_ranging()
-        # sensor_distance = g.mySensor.get_distance()
-        # g.mySensor.stop_ranging()
-        # temp = g.step_function(d, sensor_distance)
-        
-        # time.sleep(1)
-        # step_results.append(temp)
-    # step_results = np.array(step_results).flatten()
-    # print(step_results)
-    # with open("step_test_results.csv", "w") as out_file:
-        # np.savetxt(out_file, step_results, delimiter = ',')
+    step_test = [20]
+    dist = g.distance_to_move_calc(step_test)
+    step_results = []
+    for d in dist:
+        g.mySensor.start_ranging()
+        sensor_distance = g.mySensor.get_distance()
+        g.mySensor.stop_ranging()
+        temp = g.step_function(d, sensor_distance)
+        step_results.append(temp)
+    step_results = np.array(step_results).flatten()
+    print(step_results)
+    with open("step_test_results.csv", "w") as out_file:
+        np.savetxt(out_file, step_results, delimiter = ',')
     # with open("key_list.csv",'r') as key_file:
     #     keys = np.genfromtxt(key_file, delimiter=',')
     # print(keys)
