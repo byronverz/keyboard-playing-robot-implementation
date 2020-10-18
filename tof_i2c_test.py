@@ -1,6 +1,7 @@
 # import Adafruit_GPIO.I2C as I2C
 import qwiic_vl53l1x
 import time
+import numpy as np
 
 # device = I2C.Device(0x29,2)
 # def_dev = I2C.get_i2c_device(I2C.get_default_bus())
@@ -13,8 +14,8 @@ mySensor.sensor_init()
 mySensor.set_distance_mode(1)
 mySensor.set_roi(8,8)
 mySensor.set_offset(23)
-mySensor.set_inter_measurement_in_ms(200)
-mySensor.set_timing_budget_in_ms(100)
+mySensor.set_inter_measurement_in_ms(250)
+mySensor.set_timing_budget_in_ms(150)
 print("Boot state: {}".format(mySensor.boot_state()))
 print("Ambient per SPAD: {}".format(mySensor.get_ambient_per_spad()))
 print("Ambient rate: {}".format(mySensor.get_ambient_rate()))
@@ -42,18 +43,26 @@ print("Cross talk: {}".format(mySensor.get_xtalk()))
 # start = time.time()
 # print(mySensor.get_ambient_per_spad())
 # timer = 0.0
-distances = []
-for k in range(25):
-    key_measures = []
-    ready = input("Measuring distance for key {}: ".format(k))
-    if ready == 'y':
-        for n in range(10):
-            mySensor.start_ranging()
-            # time.sleep(.01)
-            distance = mySensor.get_distance()
-            # time.sleep(.01)
-            mySensor.stop_ranging()
-            distances.append(distance)
-    key_measures.append(distances)
+var_test = []
+for i in range(100):
+    mySensor.start_ranging()
+    time.sleep(0.01)
+    var_test.append(mySensor.get_distance())
+    time.sleep(0.01)
+    mySensor.stop_ranging()
+print(var_test)
+# key_measures = []
+# for k in range(25):
+#     ready = input("Measuring distance for key {}: ".format(k))
+#     if ready == 'y':
+#         distances = []
+#         for n in range(50):
+#             mySensor.start_ranging()
+#             time.sleep(.01)
+#             distance = mySensor.get_distance()
+#             time.sleep(.01)
+#             mySensor.stop_ranging()
+#             distances.append(distance)
+#     key_measures.append(np.mean(distances))
         
-print(key_measures)
+# print(key_measures)

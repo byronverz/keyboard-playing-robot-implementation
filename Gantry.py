@@ -16,12 +16,12 @@ class Gantry:
         self.enable = en_pin
         self.direction = dir_pin
         self.servo_pin = servo
-        self.home_set_point = (calibrate_k*12.60830769)+346.90830769   #make this a calculation from key to distance
-        self.max_freq = 1000.0
+        self.home_set_point = (calibrate_k*14.38653846)+373.14873846   #make this a calculation from key to distance
+        self.max_freq = 1500.0
         self.last = 0
         self.up_angle = 0.0008
         self.press_angle = 0.0022
-        self.KEY_CONST = 12.5/2.0
+        self.KEY_CONST = 14.38653846
         self.theta_m = 0.45*(np.pi/180)
         self.radius = 20
         GPIO.setup(self.direction, GPIO.OUT)
@@ -30,11 +30,16 @@ class Gantry:
         GPIO.output(self.enable,GPIO.LOW)
         # PWM.start(self.servo_pin,6,50)
 
-        print(self.mySensor.sensor_init())
+        self.mySensor.sensor_init()
         if (self.mySensor.sensor_init() == None):
             print("Sensor online")
-        self.mySensor.set_distance_mode(1)
+        else:
+            print("ToF sensor error, reboot sensor")
+            return
         self.mySensor.set_roi(8,8)
+        self.mySensor.set_offset(23)
+        self.mySensor.set_inter_measurement_in_ms(250)
+        self.mySensor.set_timing_budget_in_ms(150)
         home_bool = input("Would you like to home the gantry? (y/n)")
         if home_bool == 'y':
             self.auto_home(self.home_set_point, self.mySensor)
@@ -44,7 +49,9 @@ class Gantry:
         
     def auto_home(self, home_key, mySensor):
         self.mySensor.start_ranging()
+        time.sleep(0.01)
         sensor_distance = self.mySensor.get_distance()
+        time.sleep(0.01)
         self.mySensor.stop_ranging()
         # print("Sensor distance: {}".format(sensor_distance))
         # if sensor_distance > home_key:
@@ -83,15 +90,15 @@ class Gantry:
             except:
                 pass
             
-        while np.abs(error) > 2.0:
+        while np.abs(error) > 1.0:
             # out_arr.append(error)
             self.mySensor.start_ranging()
-            # time.sleep(0.015)
+            time.sleep(0.01)
             distance = self.mySensor.get_distance()
-            # time.sleep(0.005)
+            time.sleep(0.01)
             self.mySensor.stop_ranging()
             error = distance - set_point
-            print("Distance:\t{}".format(error))
+            # print("Error:\t{}".format(error))
             sign = self.sign_to_bool(error)
             if sign != self.dir_bool:
                 self.dir_bool = not self.dir_bool
@@ -100,7 +107,6 @@ class Gantry:
                 elif error>0:
                     GPIO.output(self.direction, GPIO.HIGH)
             frequency = self.max_freq*np.tanh(0.008*np.abs(error))
-            # frequency = self.max_freq
             try:
                 PWM.set_frequency(self.pwm_pin, frequency)
             except:
@@ -130,7 +136,7 @@ class Gantry:
         distance_to_move = []
         # direction = []
         for k in key_list:
-            distance_to_move.append((k*12.60830769)+346.90830769)
+            distance_to_move.append((k*14.38653846)+373.14873846)
             # self.prev_set = temp
         return distance_to_move
     
@@ -138,7 +144,7 @@ class Gantry:
         for k in key_list:
             i = input("Enter to move to next key")
             print("Moving to key: {}".format(k))
-            t = ((self.KEY_CONST*(k - self.previous_key))+1.5)/(self.max_freq*self.theta_m*self.radius)
+            t = (((self.KEY_CONST*(k - self.previous_key)))/(self.max_freq*self.theta_m*self.radius))*0.4576
             print(t)
             if t<0:
                 print("Moving left")
@@ -156,8 +162,25 @@ class Gantry:
             
 def main():
     g = Gantry()
-    step_test = [1,12,3,4,5,1,12,5]
+    before = []
+    for i in range(10):
+        g.mySensor.start_ranging()
+        time.sleep(0.1)
+        before.append(g.mySensor.get_distance())
+        time.sleep(0.1)
+        g.mySensor.stop_ranging()
+    step_test = [10]
     g.time_to_move(step_test)
+    time.sleep(1)
+    after = []
+    for i in range(10):
+        g.mySensor.start_ranging()
+        time.sleep(0.1)
+        after.append(g.mySensor.get_distance())
+        time.sleep(0.1)
+        g.mySensor.stop_ranging()
+    
+    print(before, after)
     # step_results = []
     # for d in dist:
         # nxt = input("Next key?: ")
@@ -180,7 +203,7 @@ def main():
     #     keys = np.genfromtxt(key_file, delimiter=',')
     # print(keys)
     # keys = random.sample(range(1,25), 10)
-    # keys = [1,25,2,24,3,23,4,22,5,21,6,20,7,19,8,18,9,17,10,16,11,15,12,14,13]
+    # keys = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,0]
     # dist_arr = g.distance_to_move_calc(keys)
     # print("Keys: {}\t Distances:{}\t".format(keys,dist_arr))
     # while True:
@@ -195,11 +218,11 @@ def main():
 
     
     # for d,k in zip(dist_arr,keys):
-    #     print("Key: {} \t Distance: {}".format(k,d))
-    #     g.mySensor.start_ranging()
-    #     sensor_distance = g.mySensor.get_distance()
-    #     g.mySensor.stop_ranging()
-    #     g.step_function(d,sensor_distance)
+        # input("Key: {} \t Distance: {}".format(k,d))
+        # g.mySensor.start_ranging()
+        # sensor_distance = g.mySensor.get_distance()
+        # g.mySensor.stop_ranging()
+        # g.step_function(d,sensor_distance)
 if __name__ == "__main__":
     main()
     PWM.cleanup()
