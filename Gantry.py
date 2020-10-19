@@ -23,7 +23,7 @@ class Gantry:
         self.press_angle = 0.0022
         self.KEY_CONST = 14.38653846
         self.theta_m = 0.45*(np.pi/180)
-        self.radius = 20
+        self.radius = 37.5
         GPIO.setup(self.direction, GPIO.OUT)
         GPIO.setup(self.enable, GPIO.OUT)
 
