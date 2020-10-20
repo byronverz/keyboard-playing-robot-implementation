@@ -1,7 +1,7 @@
 import Adafruit_BBIO.PWM as PWM
 import Adafruit_BBIO.GPIO as GPIO
 import time
-servo_pin = 'P9_16'
+servo_pin = 'P9_14'
 # GPIO.setup(servo_pin, GPIO.OUT)
 
 # maximum = 0.0022
@@ -10,7 +10,7 @@ servo_pin = 'P9_16'
 # GPIO.output(servo_pin,GPIO.HIGH)
 # time.sleep(maximum)
 # GPIO.output(servo_pin,GPIO.LOW)
-PWM.start(servo_pin, 9, 200)
+PWM.start(servo_pin, 25, 200)
 
 def set_angle(duty_cycle):
     PWM.set_duty_cycle(servo_pin,duty_cycle)
@@ -21,4 +21,4 @@ def set_angle(duty_cycle):
     set_angle(int(new_duty_cycle))
     
     
-set_angle(40)        
+set_angle(25)        
