@@ -7,7 +7,7 @@ import random
 
 
 class Gantry:
-    def __init__(self, calibrate_k = 0, sensor_address = 0x29, stepper_pwm = 'P8_13', en_pin = 'P8_7', dir_pin = 'P8_8', servo='P9_14'):
+    def __init__(self, calibrate_k = 0, sensor_address = 0x29, stepper_pwm = 'P8_13', en_pin = 'P8_7', dir_pin = 'P8_8', finger_servo='P9_14', vol_servo = 'P9_16'):
         self.calibration_key = calibrate_k
         # self.previous_key = 0
         self.mySensor = qwiic_vl53l1x.QwiicVL53L1X(address = sensor_address)
@@ -15,7 +15,8 @@ class Gantry:
         self.pwm_pin = stepper_pwm
         self.enable = en_pin
         self.direction = dir_pin
-        self.servo_pin = servo
+        self.finger_servo_pin = finger_servo
+        self.vol_servo_pin = vol_servo
         self.home_set_point = (calibrate_k*14.38653846)+373.14873846   #make this a calculation from key to distance
         self.max_freq = 1050.0
         self.last = 0
@@ -28,7 +29,8 @@ class Gantry:
         GPIO.setup(self.enable, GPIO.OUT)
 
         GPIO.output(self.enable,GPIO.LOW)
-        PWM.start(self.servo_pin,20,200)
+        PWM.start(self.finger_servo_pin,20,200)
+        PWM.start(self.vol_servo_pin,9,200)
 
         self.mySensor.sensor_init()
         if (self.mySensor.sensor_init() == None):
@@ -126,9 +128,13 @@ class Gantry:
         
         
     def press_key(self, duration):
-        PWM.set_duty_cycle(self.servo_pin,self.press_angle)
+        PWM.set_duty_cycle(self.finger_servo_pin,self.press_angle)
         time.sleep(duration)
-        PWM.set_duty_cycle(self.servo_pin,self.up_angle)
+        PWM.set_duty_cycle(self.finger_servo_pin,self.up_angle)
+    
+    def volume_adjust(self, volume):
+        dc = 41*v+9
+        PWM.set_duty_cycle(self.vol_servo_pin,dc)
         
         
     def distance_to_move_calc(self,key_list):
@@ -140,8 +146,8 @@ class Gantry:
             # self.prev_set = temp
         return distance_to_move
     
-    def time_to_move(self, key_list):
-        for k in key_list:
+    def time_to_move(self, key_list, vol_list):
+        for k, v in zip(key_list,vol_list):
             # i = input("Enter to move to next key")
             print("Moving to key: {}".format(k))
             t = (((self.KEY_CONST*(k - self.previous_key)))/(self.max_freq*self.theta_m*self.radius))
@@ -153,6 +159,7 @@ class Gantry:
                 print("Moving right")
                 GPIO.output(self.direction,GPIO.LOW)
             t = np.abs(t)
+            self.volume_adjust(v)
             PWM.start(self.pwm_pin,50, self.max_freq)
             time.sleep(t)
             PWM.stop(self.pwm_pin)

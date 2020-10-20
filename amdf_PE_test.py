@@ -4,13 +4,13 @@ import time
 from scipy import stats
 
 def amdf_PE(inputWindow):
-    D_tau = np.zeros((2,128))
-    minIndices = np.empty(2)
-    freq = np.empty(2)
-    vol = np.empty(2)
+    D_tau = np.zeros((4,128))
+    minIndices = np.empty(4)
+    freq = np.empty(4)
+    vol = np.empty(4)
     tau = np.arange(1,128)
     
-    for c in range(2):       
+    for c in range(4):       
         inputWindow_block = inputWindow[c*1280:(c*1280)+128]    
         for i,t in enumerate(tau):
             shifted = np.zeros_like(inputWindow_block)
@@ -30,7 +30,7 @@ SAMPLE_RATE = 44100
 WINDOW_SAMPLES = 2048
 WINDOWS_PER_BUFFER = 5
 FRAMES_PER_BUFFER =  WINDOW_SAMPLES * WINDOWS_PER_BUFFER
-FRAME_DIVIDER = 2
+FRAME_DIVIDER = 4
 KEY_FRAME_LEN = 256
 TIME_PER_KEY = (FRAMES_PER_BUFFER/FRAME_DIVIDER)/SAMPLE_RATE
 
@@ -76,7 +76,7 @@ freqs_arr = freqs_arr.flatten()
 # mins = np.array(mins).flatten()
 # print("Recording done \t Recording length: {}".format(timeEnd-timeStart))
 print("Number of {} frames recorded: {}".format(FRAMES_PER_BUFFER,len(freqs_arr)/8))
-print("Frequency array of length {}: \n{}".format(len(freqs_arr),freqs_arr))
+print("Frequency array of length {}: \n{}".format(len(freqs_arr),freqs_arr.tolist()))
 # print("Minimum index array: \n {}".format(mins))
 print("Volume array: \n {}".format(vols_arr))
 keys = np.zeros_like(freqs_arr)
