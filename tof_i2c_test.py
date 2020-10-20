@@ -50,7 +50,7 @@ for i in range(100):
     var_test.append(mySensor.get_distance())
     time.sleep(0.01)
     mySensor.stop_ranging()
-print(var_test)
+print(np.mean(var_test))
 # key_measures = []
 # for k in range(25):
 #     ready = input("Measuring distance for key {}: ".format(k))

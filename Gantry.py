@@ -17,18 +17,18 @@ class Gantry:
         self.direction = dir_pin
         self.servo_pin = servo
         self.home_set_point = (calibrate_k*14.38653846)+373.14873846   #make this a calculation from key to distance
-        self.max_freq = 1500.0
+        self.max_freq = 1050.0
         self.last = 0
-        self.up_angle = 0.0008
-        self.press_angle = 0.0022
-        self.KEY_CONST = 14.38653846
+        self.up_angle = 20
+        self.press_angle = 30
+        self.KEY_CONST = 13.25
         self.theta_m = 0.45*(np.pi/180)
         self.radius = 37.5
         GPIO.setup(self.direction, GPIO.OUT)
         GPIO.setup(self.enable, GPIO.OUT)
 
         GPIO.output(self.enable,GPIO.LOW)
-        # PWM.start(self.servo_pin,6,50)
+        PWM.start(self.servo_pin,20,200)
 
         self.mySensor.sensor_init()
         if (self.mySensor.sensor_init() == None):
@@ -114,7 +114,7 @@ class Gantry:
         
         PWM.stop(self.pwm_pin)
         self.last = set_point
-        # self.press_key(.25)
+        self.press_key(.25)
         return
     
     
@@ -126,9 +126,9 @@ class Gantry:
         
         
     def press_key(self, duration):
-        PWM.set_duty_cycle(self.servo_pin,2)
+        PWM.set_duty_cycle(self.servo_pin,self.press_angle)
         time.sleep(duration)
-        PWM.set_duty_cycle(self.servo_pin,11)
+        PWM.set_duty_cycle(self.servo_pin,self.up_angle)
         
         
     def distance_to_move_calc(self,key_list):
@@ -142,9 +142,9 @@ class Gantry:
     
     def time_to_move(self, key_list):
         for k in key_list:
-            i = input("Enter to move to next key")
+            # i = input("Enter to move to next key")
             print("Moving to key: {}".format(k))
-            t = (((self.KEY_CONST*(k - self.previous_key)))/(self.max_freq*self.theta_m*self.radius))*0.4576
+            t = (((self.KEY_CONST*(k - self.previous_key)))/(self.max_freq*self.theta_m*self.radius))
             print(t)
             if t<0:
                 print("Moving left")
@@ -157,6 +157,7 @@ class Gantry:
             time.sleep(t)
             PWM.stop(self.pwm_pin)
             self.previous_key = k
+            self.press_key(0.25)
         
             
             
@@ -169,7 +170,7 @@ def main():
         before.append(g.mySensor.get_distance())
         time.sleep(0.1)
         g.mySensor.stop_ranging()
-    step_test = [10]
+    step_test = [24,10,5,7,13,18,22,3,0]
     g.time_to_move(step_test)
     time.sleep(1)
     after = []
