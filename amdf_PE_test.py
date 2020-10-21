@@ -30,8 +30,8 @@ def freq_to_key(freq_arr):
     keys = np.rint(12*np.log2(freq_arr/440)-2)
     return keys
 
-def key_time(keys_arr):
-    global out_time, keys_out, curr_key_i, curr_key_time, next_key_i, out_key, out_key_list
+def key_time(keys_arr, vols_arr):
+    global out_time, keys_out, curr_key_i, curr_key_time, next_key_i, out_key, out_key_list, out_vol_list
     curr_key_i = 0
     next_key_i = 1
     if keys_arr[curr_key_i] == keys_arr[next_key_i]:
@@ -42,10 +42,11 @@ def key_time(keys_arr):
         # print("Case 1: Current and next equal \n curr_i: {} \t next_i: {}".format(curr_key_i,next_key_i))
         # print("1. New keys_arr: {}".format(keys_arr[curr_key_i:]))
         try:
-            key_time(keys_arr[curr_key_i:])
+            key_time(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
         except IndexError:
             # print("End of key list")
             out_key_list.append(out_key)
+            out_vol_list.append(vols_arr[curr_key_i])
             out_time.append(curr_key_time)
     else:
         if keys_arr[curr_key_i] == keys_arr[next_key_i+1]:
@@ -57,35 +58,39 @@ def key_time(keys_arr):
             # print("Case 2: Current and next + 1 equal \n curr_i: {} \t next_i: {}".format(curr_key_i,next_key_i))
             # print("2. New keys_arr: {}".format(keys_arr[curr_key_i:]))
             try:
-                key_time(keys_arr[curr_key_i:])
+                key_time(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
             except IndexError:
                 # print("End of key list")
                 out_key_list.append(out_key)
+                out_vol_list.append(vols_arr[curr_key_i])
                 out_time.append(curr_key_time)
         else:
             if curr_key_time !=0:
                 
                 out_key_list.append(out_key)
                 out_time.append(curr_key_time)
+                out_vol_list.append(vols_arr[curr_key_i])
                 curr_key_time = 0.0
                 curr_key_i = next_key_i
                 next_key_i += 1
                 # print("Case 3: End time for key: {}".format(keys_arr[curr_key_i-1]))
                 # print("3. New keys_arr: {}".format(keys_arr[curr_key_i:]))
                 try:
-                    key_time(keys_arr[curr_key_i:])
+                    key_time(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
                 except IndexError:
                     # print("End of key list")
                     out_key_list.append(out_key)
+                    out_vol_list.append(vols_arr[curr_key_i])
                     out_time.append(curr_key_time)
             else:
                 curr_key_i = next_key_i
                 next_key_i += 1
                 try:
-                     key_time(keys_arr[curr_key_i:])
+                     key_time(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
                 except IndexError:
                     # print("End of key list")
                     out_key_list.append(out_key)
+                    out_vol_list.append(vols_arr[curr_key_i])
                     out_time.append(curr_key_time)
     
     
@@ -125,7 +130,8 @@ streamIn.close()
 audio_obj.terminate()
     
 vols_arr = vols_arr.flatten()
-# vols_arr /= np.max(np.abs(vols_arr))
+vols_arr = np.abs(vols_arr)
+vols_arr /= np.max(vols_arr)
 freqs_arr = freqs_arr.flatten()
 key_array = freq_to_key(freqs_arr)
 print("Number of {} frames recorded: {}".format(FRAMES_PER_BUFFER,len(freqs_arr)/8))
@@ -134,26 +140,29 @@ print("Volume array: \n {}".format(vols_arr))
 print("Key number array of length {}: {} \n".format(len(key_array),key_array.tolist()))
 out_time = []
 out_key_list = []
+out_vol_list = []
 curr_key_i = 0
 next_key_i = 1
 curr_key_time = 0.0
-key_time(key_array)
+key_time(key_array,vols_arr)
+
 # key_out = np.empty(int(len(key_array)/4))
 # for k in range(0, int(len(key_array)/4)):
     # print(k, key_array[k*4:(k*4)+4])
     # key_out[k] = stats.mode(key_array[k*4:(k*4)+4], axis= None)[0][0]
 
 print("Out_key_list: {} \t out_time: {}".format(out_key_list, out_time))
+print("Out_vol_list: {}".format(out_vol_list))
 
 # with open('data_file.csv','w') as data_file:
     # np.savetxt(data_file, data_in, fmt = '%10.3f', delimiter=',')
 # with open('D_tau_file.csv','w') as d_tau_file:
     # np.savetxt(d_tau_file,D_tau, fmt = '%10.3f', delimiter = ',')
-# with open('key_list.csv','w') as key_file:
-    # np.savetxt(key_file, key_out, fmt = '%10.3f', delimiter = ',')
+with open('key_list.csv','w') as key_file:
+    np.savetxt(key_file, out_key_list, fmt = '%10.3f', delimiter = ',')
     
-# with open('vol_list.csv','w') as vol_file:
-#     np.savetxt(vol_file, vol_angles, fmt = '%10.3f', delimiter = ',')
+with open('vol_list.csv','w') as vol_file:
+    np.savetxt(vol_file, vols_arr, fmt = '%10.3f', delimiter = ',')
     
-# with open('time_list.csv', 'w') as time_file:
-#     np.savetxt(time_file, time_arr, fmt = '%10.3f', delimiter = ',')
+with open('time_list.csv', 'w') as time_file:
+    np.savetxt(time_file, out_time, fmt = '%10.3f', delimiter = ',')

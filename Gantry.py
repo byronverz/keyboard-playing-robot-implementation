@@ -171,11 +171,16 @@ class Gantry:
             
 def main():
     g = Gantry()
-
-    step_test = [14.0, 13.0, 17.0, 16.0, 13.0, 16.0, 16.0]
-    key_times =  [0.1875, 0.125, 0.125, 0.125, 0.3125, 0.125, 0.125]
+    with open("key_list.csv",'r') as kfile:
+        key_list = np.genfromtxt(kfile)
+    with open("time_list.csv", 'r') as tfile:
+        key_times = np.genfromtxt(tfile)
+    with open("vol_list.csv",'r') as vfile:
+        vol = np.genfromtxt(vfile)
+    
+    
     vol = [1,0.5,0.25,0.3,1,0.1,0.42,0.89,1]
-    g.time_to_move(step_test, vol, key_times)
+    g.time_to_move(key_list, vol, key_times)
 
     # step_results = []
     # for d in dist:
