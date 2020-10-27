@@ -21,7 +21,7 @@ class Gantry:
         self.max_freq = 1000.0
         self.last = 0
         self.up_angle = 23
-        self.press_angle = 17
+        self.press_angle = 16
         self.KEY_CONST = 13.25
         self.theta_m = 0.45*(np.pi/180)
         self.radius = 37.5

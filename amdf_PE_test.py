@@ -116,27 +116,30 @@ streamIn = audio_obj.open(
                 )
 print(streamIn.get_input_latency())
 
-freqs_arr = np.empty((12,FRAME_DIVIDER))
-vols_arr = np.empty((12,FRAME_DIVIDER))
+out_freq_list = []
+for key in range(0,24):
+    resp = input("Frequency test for key: {} ({} Hz)".format(key, (2**((key-2)/12))*440))
+    freqs_arr = np.empty((12,FRAME_DIVIDER))
+    vols_arr = np.empty((12,FRAME_DIVIDER))
 
-for num_frames in range(12):   
-    data = streamIn.read(FRAMES_PER_BUFFER)
-    data_int = np.frombuffer(data, dtype = '<i2')
-    freqs_arr[num_frames], vols_arr[num_frames] = amdf_PE(data_int)
-
-
-streamIn.stop_stream()
-streamIn.close()
-audio_obj.terminate()
+    for num_frames in range(12):   
+        data = streamIn.read(FRAMES_PER_BUFFER)
+        data_int = np.frombuffer(data, dtype = '<i2')
+        freqs_arr[num_frames], vols_arr[num_frames] = amdf_PE(data_int)
     
-vols_arr = vols_arr.flatten()
-vols_arr = np.abs(vols_arr)
-vols_arr /= np.max(vols_arr)
-freqs_arr = freqs_arr.flatten()
-key_array = freq_to_key(freqs_arr)
-print("Number of {} frames recorded: {}".format(FRAMES_PER_BUFFER,len(freqs_arr)/8))
-print("Frequency array of length {}: \n{}".format(len(freqs_arr),freqs_arr.tolist()))
-print("Volume array: \n {}".format(vols_arr))
+
+# streamIn.stop_stream()
+# streamIn.close()
+# audio_obj.terminate()
+    
+    vols_arr = vols_arr.flatten()
+    vols_arr = np.abs(vols_arr)
+    vols_arr /= np.max(vols_arr)
+    freqs_arr = freqs_arr.flatten()
+    key_array = freq_to_key(freqs_arr)
+# print("Number of {} frames recorded: {}".format(FRAMES_PER_BUFFER,len(freqs_arr)/8))
+# print("Frequency array of length {}: \n{}".format(len(freqs_arr),freqs_arr.tolist()))
+# print("Volume array: \n {}".format(vols_arr))
 print("Key number array of length {}: {} \n".format(len(key_array),key_array.tolist()))
 out_time = []
 out_key_list = []
@@ -158,6 +161,8 @@ print("Out_vol_list: {}".format(out_vol_list))
     # np.savetxt(data_file, data_in, fmt = '%10.3f', delimiter=',')
 # with open('D_tau_file.csv','w') as d_tau_file:
     # np.savetxt(d_tau_file,D_tau, fmt = '%10.3f', delimiter = ',')
+with open("freq_list.csv", 'w') as freq_file:
+    np.savetxt(freq_file, freqs_arr, fmt = '%10,3f', delimiter = ',')
 with open('key_list.csv','w') as key_file:
     np.savetxt(key_file, out_key_list, fmt = '%10.3f', delimiter = ',')
     
