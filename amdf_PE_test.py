@@ -116,58 +116,63 @@ streamIn = audio_obj.open(
                 )
 print(streamIn.get_input_latency())
 
-out_freq_list = []
-for key in range(0,24):
-    resp = input("Frequency test for key: {} ({} Hz)".format(key, (2**((key-2)/12))*440))
-    freqs_arr = np.empty((12,FRAME_DIVIDER))
-    vols_arr = np.empty((12,FRAME_DIVIDER))
 
-    for num_frames in range(12):   
-        data = streamIn.read(FRAMES_PER_BUFFER)
-        data_int = np.frombuffer(data, dtype = '<i2')
-        freqs_arr[num_frames], vols_arr[num_frames] = amdf_PE(data_int)
+freqs_arr = np.empty((12,FRAME_DIVIDER))
+vols_arr = np.empty((12,FRAME_DIVIDER))
+
+for num_frames in range(12):   
+    data = streamIn.read(FRAMES_PER_BUFFER)
+    data_int = np.frombuffer(data, dtype = '<i2')
+    freqs_arr[num_frames], vols_arr[num_frames] = amdf_PE(data_int)
     
 
 # streamIn.stop_stream()
 # streamIn.close()
 # audio_obj.terminate()
     
-    vols_arr = vols_arr.flatten()
-    vols_arr = np.abs(vols_arr)
-    vols_arr /= np.max(vols_arr)
-    freqs_arr = freqs_arr.flatten()
-    key_array = freq_to_key(freqs_arr)
+    # vols_arr = vols_arr.flatten()
+    # vols_arr = np.abs(vols_arr)
+    # vols_arr /= np.max(vols_arr)
+freqs_arr = freqs_arr.flatten()
+out_freq_list = freqs_arr.tolist()
+    # key_array = freq_to_key(freqs_arr)
+
 # print("Number of {} frames recorded: {}".format(FRAMES_PER_BUFFER,len(freqs_arr)/8))
 # print("Frequency array of length {}: \n{}".format(len(freqs_arr),freqs_arr.tolist()))
 # print("Volume array: \n {}".format(vols_arr))
-print("Key number array of length {}: {} \n".format(len(key_array),key_array.tolist()))
-out_time = []
-out_key_list = []
-out_vol_list = []
-curr_key_i = 0
-next_key_i = 1
-curr_key_time = 0.0
-key_time(key_array,vols_arr)
+# print("Key number array of length {}: {} \n".format(len(key_array),key_array.tolist()))
+
+# out_time = []
+# out_key_list = []
+# out_vol_list = []
+# curr_key_i = 0
+# next_key_i = 1
+# curr_key_time = 0.0
+# key_time(key_array,vols_arr)
 
 # key_out = np.empty(int(len(key_array)/4))
 # for k in range(0, int(len(key_array)/4)):
     # print(k, key_array[k*4:(k*4)+4])
     # key_out[k] = stats.mode(key_array[k*4:(k*4)+4], axis= None)[0][0]
 
-print("Out_key_list: {} \t out_time: {}".format(out_key_list, out_time))
-print("Out_vol_list: {}".format(out_vol_list))
+# print("Out_key_list: {} \t out_time: {}".format(out_key_list, out_time))
+# print("Out_vol_list: {}".format(out_vol_list))
 
 # with open('data_file.csv','w') as data_file:
     # np.savetxt(data_file, data_in, fmt = '%10.3f', delimiter=',')
 # with open('D_tau_file.csv','w') as d_tau_file:
     # np.savetxt(d_tau_file,D_tau, fmt = '%10.3f', delimiter = ',')
-with open("freq_list.csv", 'w') as freq_file:
-    np.savetxt(freq_file, freqs_arr, fmt = '%10,3f', delimiter = ',')
-with open('key_list.csv','w') as key_file:
-    np.savetxt(key_file, out_key_list, fmt = '%10.3f', delimiter = ',')
+# with open("freq_list.csv", 'w') as freq_file:
+    # np.savetxt(freq_file, freqs_arr, fmt = '%10,3f', delimiter = ',')
+# with open('key_list.csv','w') as key_file:
+    # np.savetxt(key_file, out_key_list, fmt = '%10.3f', delimiter = ',')
     
-with open('vol_list.csv','w') as vol_file:
-    np.savetxt(vol_file, vols_arr, fmt = '%10.3f', delimiter = ',')
+# with open('vol_list.csv','w') as vol_file:
+    # np.savetxt(vol_file, vols_arr, fmt = '%10.3f', delimiter = ',')
     
-with open('time_list.csv', 'w') as time_file:
-    np.savetxt(time_file, out_time, fmt = '%10.3f', delimiter = ',')
+# with open('time_list.csv', 'w') as time_file:
+    # np.savetxt(time_file, out_time, fmt = '%10.3f', delimiter = ',')
+
+with open('out_freq_list.csv','a') as of_file:
+    for item in out_freq_list:
+        of_file.write("%s \n" % item)
