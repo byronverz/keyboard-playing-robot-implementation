@@ -11,7 +11,7 @@ def amdf_PE(inputWindow):
     tau = np.arange(1,128)
     
     for c in range(4):       
-        inputWindow_block = inputWindow[c*1280:(c*1280)+128]    
+        inputWindow_block = inputWindow[c*2560:(c*2560)+128]    
         for i,t in enumerate(tau):
             shifted = np.zeros_like(inputWindow_block)
             shifted[t:] = inputWindow_block[:-t]
@@ -30,6 +30,11 @@ def freq_to_key(freq_arr):
     keys = np.rint(12*np.log2(freq_arr/440)-2)
     return keys
 
+def period_to_key(period_arr):
+    keys = np.zeros_like(freq_arr)
+    keys = np.rint(2-12*np.log2(440*period_arr))
+    return keys
+    
 def key_time(keys_arr, vols_arr):
     global out_time, keys_out, curr_key_i, curr_key_time, next_key_i, out_key, out_key_list, out_vol_list
     curr_key_i = 0
