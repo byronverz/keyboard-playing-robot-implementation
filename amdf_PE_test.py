@@ -42,7 +42,7 @@ def key_time(keys_arr, vols_arr):
     next_key_i = 1
     if keys_arr[curr_key_i] == keys_arr[next_key_i]:
         out_key = keys_arr[curr_key_i]
-        curr_key_time =+ 0.0625*2
+        curr_key_time += 0.0625*2
         curr_key_i = next_key_i 
         next_key_i += 1
         
@@ -130,9 +130,9 @@ for num_frames in range(12):
     freqs_arr[num_frames], vols_arr[num_frames] = amdf_PE(data_int)
     
 
-# streamIn.stop_stream()
-# streamIn.close()
-# audio_obj.terminate()
+streamIn.stop_stream()
+streamIn.close()
+audio_obj.terminate()
     
 vols_arr = vols_arr.flatten()
 vols_arr = np.abs(vols_arr)

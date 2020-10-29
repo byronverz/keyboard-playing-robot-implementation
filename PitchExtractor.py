@@ -3,12 +3,12 @@ import numpy as np
 import time
 
 #### These need to be defined in the main function of the program ####
-out_time = []
-out_key_list = []
-out_vol_list = []
-curr_key_i = 0
-next_key_i = 1
-curr_key_time = 0.0
+# out_time = []
+# out_key_list = []
+# out_vol_list = []
+# curr_key_i = 0
+# next_key_i = 1
+# curr_key_time = 0.0
 #### ------------------------------------------------------------ ####
 
 
@@ -43,59 +43,59 @@ def period_to_key(period_arr):
     keys = np.rint(2-12*np.log2(440*period_arr))
     return keys
 
-def key_time(keys_arr, vols_arr):
-    global out_time, keys_out, curr_key_i, curr_key_time, next_key_i, out_key, out_key_list, out_vol_list
-    curr_key_i = 0
-    next_key_i = 1
-    if keys_arr[curr_key_i] == keys_arr[next_key_i]:
-        out_key = keys_arr[curr_key_i]
-        curr_key_time =+ 0.0625*2
-        curr_key_i = next_key_i 
-        next_key_i += 1
+# def key_time(keys_arr, vols_arr):
+#     # global out_key
+#     settings.curr_key_i = 0
+#     settings.next_key_i = 1
+#     if keys_arr[settings.curr_key_i] == keys_arr[settings.next_key_i]:
+#         settings.out_key = keys_arr[settings.curr_key_i]
+#         settings.curr_key_time =+ 0.0625*2
+#         settings.curr_key_i = settings.next_key_i 
+#         settings.next_key_i += 1
 
-        try:
-            key_time(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
-        except IndexError:
-            out_key_list.append(out_key)
-            out_vol_list.append(vols_arr[curr_key_i])
-            out_time.append(curr_key_time)
-    else:
-        if keys_arr[curr_key_i] == keys_arr[next_key_i+1]:
+#         try:
+#             key_time(keys_arr[settings.curr_key_i:], vols_arr[settings.curr_key_i:])
+#         except IndexError:
+#             settings.out_key_list.append(settings.out_key)
+#             settings.out_vol_list.append(vols_arr[settings.curr_key_i])
+#             settings.out_time.append(settings.curr_key_time)
+#     else:
+#         if keys_arr[settings.curr_key_i] == keys_arr[settings.next_key_i+1]:
             
-            out_key = keys_arr[curr_key_i]
-            curr_key_time += 0.0625*3
-            curr_key_i = next_key_i+1
-            next_key_i += ((next_key_i+1)+1)
-            try:
-                key_time(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
-            except IndexError:
-                out_key_list.append(out_key)
-                out_vol_list.append(vols_arr[curr_key_i])
-                out_time.append(curr_key_time)
-        else:
-            if curr_key_time !=0:
+#             settings.out_key = keys_arr[settings.curr_key_i]
+#             settings.curr_key_time += 0.0625*3
+#             settings.curr_key_i = settings.next_key_i+1
+#             settings.next_key_i += ((settings.next_key_i+1)+1)
+#             try:
+#                 key_time(keys_arr[settings.curr_key_i:], vols_arr[settings.curr_key_i:])
+#             except IndexError:
+#                 settings.out_key_list.append(settings.out_key)
+#                 settings.out_vol_list.append(vols_arr[settings.curr_key_i])
+#                 settings.out_time.append(settings.curr_key_time)
+#         else:
+#             if settings.curr_key_time !=0:
                 
-                out_key_list.append(out_key)
-                out_time.append(curr_key_time)
-                out_vol_list.append(vols_arr[curr_key_i])
-                curr_key_time = 0.0
-                curr_key_i = next_key_i
-                next_key_i += 1
-                try:
-                    key_time(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
-                except IndexError:
-                    out_key_list.append(out_key)
-                    out_vol_list.append(vols_arr[curr_key_i])
-                    out_time.append(curr_key_time)
-            else:
-                curr_key_i = next_key_i
-                next_key_i += 1
-                try:
-                     key_time(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
-                except IndexError:
-                    out_key_list.append(out_key)
-                    out_vol_list.append(vols_arr[curr_key_i])
-                    out_time.append(curr_key_time)
+#                 settings.out_key_list.append(settings.out_key)
+#                 settings.out_time.append(settings.curr_key_time)
+#                 settings.out_vol_list.append(vols_arr[settings.curr_key_i])
+#                 curr_key_time = 0.0
+#                 settings.curr_key_i = settings.next_key_i
+#                 settings.next_key_i += 1
+#                 try:
+#                     key_time(keys_arr[settings.curr_key_i:], vols_arr[settings.curr_key_i:])
+#                 except IndexError:
+#                     settings.out_key_list.append(settings.out_key)
+#                     settings.out_vol_list.append(vols_arr[settings.curr_key_i])
+#                     settings.out_time.append(curr_key_time)
+#             else:
+#                 settings.curr_key_i = settings.next_key_i
+#                 settings.next_key_i += 1
+#                 try:
+#                      key_time(keys_arr[settings.curr_key_i:], vols_arr[settings.curr_key_i:])
+#                 except IndexError:
+#                     settings.out_key_list.append(settings.out_key)
+#                     settings.out_vol_list.append(vols_arr[settings.curr_key_i])
+#                     settings.out_time.append(curr_key_time)
                     
 def create_audio_stream(FORMAT = pyaudio.paInt16, CHANNELS = 1, SAMPLE_RATE = 44100, WINDOW_SAMPLES = 2048, WINDOWS_PER_BUFFER = 5):
     FRAMES_PER_BUFFER =  WINDOW_SAMPLES * WINDOWS_PER_BUFFER
