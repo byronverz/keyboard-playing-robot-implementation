@@ -17,8 +17,8 @@ class Gantry:
         self.direction = dir_pin
         self.finger_servo_pin = finger_servo
         self.vol_servo_pin = vol_servo
-        self.home_set_point = (calibrate_k*14.38653846)+455.96   #make this a calculation from key to distance
-        self.max_freq = 1000.0
+        self.home_set_point = 482.27+7   #make this a calculation from key to distance
+        self.max_freq = 1200.0
         self.last = 0
         self.up_angle = 23
         self.press_angle = 16
@@ -72,14 +72,14 @@ class Gantry:
         error = distance - set_point
         frequency = self.max_freq*np.tanh(np.abs(error))
         # frequency = self.max_freq
-        print("Error: {}".format(error))
+        # print("Error: {}".format(error))
         if error<0:
             self.dir_bool = False
-            print("Moving right")
+            # print("Moving right")
             GPIO.output(self.direction, GPIO.LOW)
         elif error>0:
             self.dir_bool = True
-            print("Moving left")
+            # print("Moving left")
             GPIO.output(self.direction, GPIO.HIGH)
         if (np.abs(prev_freq-frequency))>2000.0:
             try:
@@ -148,85 +148,46 @@ class Gantry:
         return distance_to_move
     
     def time_to_move(self, key_list, vol_list, k_times):
-        for k, v, t in zip(key_list,vol_list, k_times):
+        for k, v, press_t in zip(key_list,vol_list, k_times):
             # i = input("Enter to move to next key")
-            print("Moving to key: {}".format(k))
+            # print("Moving to key: {}".format(k))
             t = (((self.KEY_CONST*(k - self.previous_key)))/(self.max_freq*self.theta_m*self.radius))
-            print(t)
+            # print(t)
             if t<0:
-                print("Moving left")
+                # print("Moving left")
                 GPIO.output(self.direction, GPIO.HIGH) 
             elif t>0:
-                print("Moving right")
+                # print("Moving right")
                 GPIO.output(self.direction,GPIO.LOW)
             t = np.abs(t)
             self.volume_adjust(v)
-            PWM.start(self.pwm_pin,50, self.max_freq)
-            time.sleep(t)
-            PWM.stop(self.pwm_pin)
-            self.previous_key = k
-            self.press_key(t)
+            if k >= -1:
+                PWM.start(self.pwm_pin,50, self.max_freq)
+                time.sleep(t)
+                PWM.stop(self.pwm_pin)
+                self.previous_key = k
+                self.press_key(press_t)
+            else:
+                time.sleep(t)
+                self.previous_key = self.previous_key
+                
         
             
             
-def main():
-    g = Gantry()
-    with open("key_list.csv",'r') as kfile:
-        key_list = np.genfromtxt(kfile)
-    with open("time_list.csv", 'r') as tfile:
-        key_times = np.genfromtxt(tfile)
-    with open("vol_list.csv",'r') as vfile:
-        vol = np.genfromtxt(vfile)
-    
-    
-    vol = [1,0.5,0.25,0.3,1,0.1,0.42,0.89,1]
-    g.time_to_move(key_list, vol, key_times)
+# def main():
+#     g = Gantry()
+#     with open("key_list.csv",'r') as kfile:
+#         key_list = np.genfromtxt(kfile)
+#     with open("time_list.csv", 'r') as tfile:
+#         key_times = np.genfromtxt(tfile)
+#     with open("vol_list.csv",'r') as vfile:
+#         vol = np.genfromtxt(vfile)
 
-    # step_results = []
-    # for d in dist:
-        # nxt = input("Next key?: ")
-        # if nxt == 'y':
-            # pass
-        # else:
-            # return
-        # g.mySensor.start_ranging()
-        # sensor_distance = g.mySensor.get_distance()
-        # g.mySensor.stop_ranging()
-        # temp = g.step_function(d, sensor_distance)
-        
-        # time.sleep(1)
-        # step_results.append(temp)
-    # step_results = np.array(step_results).flatten()
-    # print(step_results)
-    # with open("step_test_results.csv", "w") as out_file:
-        # np.savetxt(out_file, step_results, delimiter = ',')
-    # with open("key_list.csv",'r') as key_file:
-    #     keys = np.genfromtxt(key_file, delimiter=',')
-    # print(keys)
-    # keys = random.sample(range(1,25), 10)
-    # keys = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,0]
-    # dist_arr = g.distance_to_move_calc(keys)
-    # print("Keys: {}\t Distances:{}\t".format(keys,dist_arr))
-    # while True:
-    #     g.mySensor.start_ranging()
-    #     time.sleep(.005)
-    #     sensor_distance = g.mySensor.get_distance()
-    #     time.sleep(.005)
-    #     g.mySensor.stop_ranging()
-    #     d = input("Distance to move to?:")
-    #     g.step_function(float(d),sensor_distance)
-        # g.press_key(0.25)
-
+#     g.time_to_move(key_list, vol, key_times)
     
-    # for d,k in zip(dist_arr,keys):
-        # input("Key: {} \t Distance: {}".format(k,d))
-        # g.mySensor.start_ranging()
-        # sensor_distance = g.mySensor.get_distance()
-        # g.mySensor.stop_ranging()
-        # g.step_function(d,sensor_distance)
-if __name__ == "__main__":
-    main()
-    PWM.cleanup()
+# if __name__ == "__main__":
+#     main()
+#     PWM.cleanup()
                
         
              

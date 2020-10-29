@@ -2,12 +2,15 @@ import pyaudio
 import numpy as np
 import time
 
+#### These need to be defined in the main function of the program ####
 out_time = []
 out_key_list = []
 out_vol_list = []
 curr_key_i = 0
 next_key_i = 1
 curr_key_time = 0.0
+#### ------------------------------------------------------------ ####
+
 
 def amdf_PE(inputWindow):
     D_tau = np.zeros((4,128))
@@ -33,6 +36,11 @@ def amdf_PE(inputWindow):
 def freq_to_key(freq_arr):
     keys = np.zeros_like(freq_arr)
     keys = np.rint(12*np.log2(freq_arr/440)-2)
+    return keys
+    
+def period_to_key(period_arr):
+    keys = np.zeros_like(period_arr)
+    keys = np.rint(2-12*np.log2(440*period_arr))
     return keys
 
 def key_time(keys_arr, vols_arr):
