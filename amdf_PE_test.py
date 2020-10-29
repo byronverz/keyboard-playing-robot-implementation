@@ -19,7 +19,7 @@ def amdf_PE(inputWindow):
             
         offset = np.argmax(D_tau[c])
         minIndices[c] = (c*128+offset)+np.argmin(D_tau[c,offset:-1])
-        freq[c] = (44100/(minIndices[c]-(c*128)))
+        freq[c] = (1/44100)*(minIndices[c]-(c*128))
         vol[c] = 20*np.log10(np.mean(np.abs(inputWindow))) - 96.3
     
     return freq, vol
@@ -124,11 +124,12 @@ print(streamIn.get_input_latency())
 
 freqs_arr = np.empty((12,FRAME_DIVIDER))
 vols_arr = np.empty((12,FRAME_DIVIDER))
+period_array = np.empty((12, FRAME_DIVIDER))
 
 for num_frames in range(12):   
     data = streamIn.read(FRAMES_PER_BUFFER)
     data_int = np.frombuffer(data, dtype = '<i2')
-    freqs_arr[num_frames], vols_arr[num_frames] = amdf_PE(data_int)
+    period_array[num_frames], vols_arr[num_frames] = amdf_PE(data_int)
     
 
 # streamIn.stop_stream()
@@ -138,9 +139,11 @@ for num_frames in range(12):
     # vols_arr = vols_arr.flatten()
     # vols_arr = np.abs(vols_arr)
     # vols_arr /= np.max(vols_arr)
-freqs_arr = freqs_arr.flatten()
-out_freq_list = freqs_arr.tolist()
+# freqs_arr = freqs_arr.flatten()
+# out_freq_list = freqs_arr.tolist()
+out_period_list = period_array.flatten().tolist()
     # key_array = freq_to_key(freqs_arr)
+# key_arr = period_to_key(period_array)
 
 # print("Number of {} frames recorded: {}".format(FRAMES_PER_BUFFER,len(freqs_arr)/8))
 # print("Frequency array of length {}: \n{}".format(len(freqs_arr),freqs_arr.tolist()))
@@ -178,6 +181,10 @@ out_freq_list = freqs_arr.tolist()
 # with open('time_list.csv', 'w') as time_file:
     # np.savetxt(time_file, out_time, fmt = '%10.3f', delimiter = ',')
 
-with open('out_freq_list.csv','a') as of_file:
-    for item in out_freq_list:
-        of_file.write("%s \n" % item)
+# with open('out_freq_list.csv','a') as of_file:
+#     for item in out_freq_list:
+#         of_file.write("%s \n" % item)
+
+with open('out_period_list.csv','a') as op_file:
+    for item in out_period_list:
+        op_file.write("%s \n" % item)        
