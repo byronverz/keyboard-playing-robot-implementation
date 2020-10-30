@@ -18,7 +18,7 @@ class Gantry:
         self.finger_servo_pin = finger_servo
         self.vol_servo_pin = vol_servo
         self.home_set_point = 482.27+7   #make this a calculation from key to distance
-        self.max_freq = 1200.0
+        self.max_freq = 1100.0
         self.last = 0
         self.up_angle = 23
         self.press_angle = 16

@@ -11,7 +11,10 @@ def cadence_controller(keys_arr, vols_arr):
     next_key_i = 1
     if keys_arr[curr_key_i] == keys_arr[next_key_i]:
         out_key = keys_arr[curr_key_i]
-        curr_key_time += 0.0625*2
+        if curr_key_time != 0:
+            curr_key_time += 0.0625
+        elif curr_key_time == 0:
+            curr_key_time += 0.0625*2
         curr_key_i = next_key_i 
         next_key_i += 1
         
@@ -55,6 +58,8 @@ def cadence_controller(keys_arr, vols_arr):
                     out_vol_list.append(vols_arr[curr_key_i])
                     out_time.append(curr_key_time)
             else:
+                out_key_list.append(-100)
+                out_time.append(0.0625)
                 curr_key_i = next_key_i
                 next_key_i += 1
                 try:
@@ -112,7 +117,7 @@ def main():
     # Get timing per key
     cadence_controller(key_array,vols_arr)
     print("Out_key_list length: {} \t Out_vol_list length: {}".format(len(out_key_list), len(out_vol_list)))
-    print("Out_key_list: {} \n Out_vol_list: {} \n Out_time: {}".format(out_key_list, out_vol_list, out_time))
+    print("Out_key_list: {} \n Out_vol_list: {} \n Out_time: {} \n Total time: {}".format(out_key_list, out_vol_list, out_time, np.sum(out_time)))
     # Start playing movement
     g.time_to_move(out_key_list, out_vol_list, out_time)
     
