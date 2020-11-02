@@ -124,7 +124,23 @@ def main():
     print("Out_key_list length: {} \t Out_vol_list length: {}".format(len(out_key_list), len(out_vol_list)))
     print("Out_key_list: {} \n Out_vol_list: {} \n Out_time: {} \n Total time: {}".format(out_key_list, out_vol_list, out_time, np.sum(out_time)))
     # Start playing movement
+    # out_key_list = [24,10,5,15,0]
+    # out_vol_list = [0.9,0.5,0.9,0.5,0.9]
+    # out_time = [0.5,0.25,0.25,0.75,0.75]
+    # d_to_move = g.distance_to_move_calc(out_key_list)
     g.time_to_move(out_key_list, out_vol_list, out_time)
+    # dist = []
+    # freq = []
+    # err = []
+    # for k,t in zip(d_to_move, out_time):
+    #     d,f,e = g.step_function(k,t)
+    #     dist.append(d)
+    #     freq.append(f)
+    #     err.append(e)
+    
+    # print(dist)
+    # print(freq)
+    # print(err)
     
 if __name__ == "__main__":
     

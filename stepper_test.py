@@ -14,7 +14,7 @@ GPIO.setup(DIR_PIN, GPIO.OUT)
 GPIO.setup(EN_PIN, GPIO.OUT)
 GPIO.output(EN_PIN,GPIO.LOW)
 GPIO.output(DIR_PIN,GPIO.HIGH)
-PWM.start(pwm_pin,50,1000)
+
 # PWM.start(servo_1,10,50)
 # PWM.start(servo_2,10,50)
 def step_speed_test (frequency, duty):
@@ -85,15 +85,19 @@ def time_to_move_calc(key_list):
     
     
 def main():
-    time.sleep(2)
-    keys = random.sample(range(1,25), 10)
-    keys.append(25)
-    direction, time_arr = time_to_move_calc(keys)
-    for d, t in zip(direction, time_arr):
-        print("Direction: {} \t Time: {}".format(d,t))
-        # move(d,t)
-    # print(keys)
-    step_speed_test(1000, 50)
+    PWM.start(pwm_pin,50,6)
+    freq_list = [   6.28160047,  342.81503828,  888.95188961, 1459.5137647 ,
+       1947.68064201, 2308.37331789, 2500]
+    s = time.time()
+    for f in freq_list:
+        PWM.set_frequency(pwm_pin,f)
+        time.sleep(0.01)
+    end = time.time() -s
+    print(end)
+    time.sleep(3)
+    for f in reversed(freq_list):
+        PWM.set_frequency(pwm_pin,f)
+        time.sleep(0.01)
     # rail_test(1,100)
     # move(0,1.5,250)
     PWM.cleanup()
