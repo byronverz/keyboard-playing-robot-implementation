@@ -26,29 +26,15 @@ def cadence_controller(keys_arr, vols_arr):
             out_vol_list.append(vols_arr[curr_key_i])
             out_time.append(curr_key_time)
     else:
-        if keys_arr[curr_key_i] == keys_arr[next_key_i+1]:
-            
-            out_key = keys_arr[curr_key_i]
-            curr_key_time += 0.0625*3
-            curr_key_i = next_key_i+1
-            next_key_i += ((next_key_i+1)+1)
-            
-            try:
-                cadence_controller(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
-            except IndexError:
-                
-                out_key_list.append(out_key)
-                out_vol_list.append(vols_arr[curr_key_i])
-                out_time.append(curr_key_time)
-        else:
-            if curr_key_time !=0:
-                
-                out_key_list.append(out_key)
-                out_time.append(curr_key_time)
-                out_vol_list.append(vols_arr[curr_key_i])
-                curr_key_time = 0.0
-                curr_key_i = next_key_i
-                next_key_i += 1
+        if len(keys_arr)>2:
+            if keys_arr[curr_key_i] == keys_arr[next_key_i+1]:
+                out_key = keys_arr[curr_key_i]
+                if curr_key_time !=0:
+                    curr_key_time += 0.0625*2
+                elif curr_key_time == 0:
+                    curr_key_time += 0.0625*3
+                curr_key_i = next_key_i+1
+                next_key_i += ((next_key_i+1)+1)
                 
                 try:
                     cadence_controller(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
@@ -58,18 +44,37 @@ def cadence_controller(keys_arr, vols_arr):
                     out_vol_list.append(vols_arr[curr_key_i])
                     out_time.append(curr_key_time)
             else:
-                out_key_list.append(-100)
-                out_time.append(0.0625)
-                curr_key_i = next_key_i
-                next_key_i += 1
-                try:
-                     cadence_controller(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
-                except IndexError:
+                if curr_key_time !=0:
                     
                     out_key_list.append(out_key)
-                    out_vol_list.append(vols_arr[curr_key_i])
                     out_time.append(curr_key_time)
-
+                    out_vol_list.append(vols_arr[curr_key_i])
+                    curr_key_time = 0.0
+                    curr_key_i = next_key_i
+                    next_key_i += 1
+                    
+                    try:
+                        cadence_controller(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
+                    except IndexError:
+                        
+                        out_key_list.append(out_key)
+                        out_vol_list.append(vols_arr[curr_key_i])
+                        out_time.append(curr_key_time)
+                else:
+                    out_key_list.append(-100)
+                    out_time.append(0.0625)
+                    curr_key_i = next_key_i
+                    next_key_i += 1
+                    try:
+                         cadence_controller(keys_arr[curr_key_i:], vols_arr[curr_key_i:])
+                    except IndexError:
+                        
+                        out_key_list.append(out_key)
+                        out_vol_list.append(vols_arr[curr_key_i])
+                        out_time.append(curr_key_time)
+        else:
+            out_key_list.append(out_key)
+            out_time.append(curr_key_time+0.0625)
 
 def main():
     global out_key_list, out_vol_list, out_time
@@ -110,10 +115,10 @@ def main():
     vols_arr = np.abs(vols_arr.flatten())
     vols_arr /= np.max(vols_arr)
     freqs_arr = freqs_arr.flatten()
-    print("Volume array: {}".format(vols_arr))
+    # print("Volume array: {}".format(vols_arr))
     # Convert frequencies to keys
     key_array = PE.freq_to_key(freqs_arr)
-    print("Key array: {}".format(key_array.tolist()))
+    # print("Key array: {}".format(key_array.tolist()))
     # Get timing per key
     cadence_controller(key_array,vols_arr)
     print("Out_key_list length: {} \t Out_vol_list length: {}".format(len(out_key_list), len(out_vol_list)))

@@ -43,14 +43,16 @@ print("Cross talk: {}".format(mySensor.get_xtalk()))
 # start = time.time()
 # print(mySensor.get_ambient_per_spad())
 # timer = 0.0
-var_test = []
-for i in range(100):
+var_test = [0,0,0,0,0,0,0,0,0,0]
+for i in range(404):
     mySensor.start_ranging()
     time.sleep(0.01)
     var_test.append(mySensor.get_distance())
     time.sleep(0.01)
     mySensor.stop_ranging()
 print(np.mean(var_test))
+with open('step_setpoint_results.csv','w') as sp:
+    np.savetxt(sp, var_test, fmt = '%10.3f', delimiter = ',')
 # key_measures = []
 # for k in range(25):
 #     ready = input("Measuring distance for key {}: ".format(k))

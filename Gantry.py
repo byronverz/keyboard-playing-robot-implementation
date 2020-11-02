@@ -18,9 +18,9 @@ class Gantry:
         self.finger_servo_pin = finger_servo
         self.vol_servo_pin = vol_servo
         self.home_set_point = 482.27+7   #make this a calculation from key to distance
-        self.max_freq = 1100.0
+        self.max_freq = 1200.0
         self.last = 0
-        self.up_angle = 23
+        self.up_angle = 22
         self.press_angle = 16
         self.KEY_CONST = 13.25
         self.theta_m = 0.45*(np.pi/180)
@@ -50,28 +50,36 @@ class Gantry:
             return
         
     def auto_home(self, home_key, mySensor):
-        self.mySensor.start_ranging()
-        time.sleep(0.01)
-        sensor_distance = self.mySensor.get_distance()
-        time.sleep(0.01)
-        self.mySensor.stop_ranging()
+        # self.mySensor.start_ranging()
+        # time.sleep(0.01)
+        # sensor_distance = self.mySensor.get_distance()
+        # time.sleep(0.01)
+        # self.mySensor.stop_ranging()
         # print("Sensor distance: {}".format(sensor_distance))
         # if sensor_distance > home_key:
             # GPIO.output(self.direction, GPIO.LOW)
             # self.step_function(home_key, sensor_distance)
         # elif sensor_distance < home_key:
             # GPIO.output(self.direction, GPIO.HIGH)
-        self.step_function(home_key, sensor_distance )
+        d,f, e = self.step_function(home_key)
         print("Homing done!")
         self.previous_key = 0
             
             
-    def step_function(self,set_point, distance):
-        # out_arr = []
+    def step_function(self,set_point):
+        self.mySensor.start_ranging()
+        time.sleep(0.01)
+        distance = self.mySensor.get_distance()
+        time.sleep(0.01)
+        self.mySensor.stop_ranging()
+        
+        dist_out = []
+        freq_out = []
+        error_out = []
         prev_freq = 0
         error = distance - set_point
-        frequency = self.max_freq*np.tanh(np.abs(error))
-        # frequency = self.max_freq
+        # frequency = self.max_freq*np.tanh(np.abs(error))
+        frequency = np.abs(error)
         # print("Error: {}".format(error))
         if error<0:
             self.dir_bool = False
@@ -92,15 +100,18 @@ class Gantry:
             except:
                 print("Stepper PWM failed to start")
                 pass
-            
+        error_sum = 0 
         while np.abs(error) > 1.0:
-            # out_arr.append(error)
+            dist_out.append(distance)
+            freq_out.append(frequency)
+            error_out.append(error)
             self.mySensor.start_ranging()
             time.sleep(0.01)
             distance = self.mySensor.get_distance()
             time.sleep(0.01)
             self.mySensor.stop_ranging()
             error = distance - set_point
+            error_sum += error
             # print("Error:\t{}".format(error))
             sign = self.sign_to_bool(error)
             if sign != self.dir_bool:
@@ -109,16 +120,19 @@ class Gantry:
                     GPIO.output(self.direction, GPIO.LOW)
                 elif error>0:
                     GPIO.output(self.direction, GPIO.HIGH)
-            frequency = self.max_freq*np.tanh(0.008*np.abs(error))
+            # frequency = self.max_freq*np.tanh(0.008*np.abs(error))
+            # frequency = np.abs
+            frequency = 5*error+(0.025/3)*error_sum
+            print(frequency)
             try:
-                PWM.set_frequency(self.pwm_pin, frequency)
+                PWM.set_frequency(self.pwm_pin, np.abs(frequency))
             except:
                 PWM.stop(self.pwm_pin)
         
         PWM.stop(self.pwm_pin)
         self.last = set_point
         self.press_key(.25)
-        return
+        return np.array(dist_out), np.array(freq_out), np.array(error_out)
     
     
     def sign_to_bool(self, in_var):
@@ -129,10 +143,11 @@ class Gantry:
         
         
     def press_key(self, duration):
+        s = time.time()
         PWM.set_duty_cycle(self.finger_servo_pin,self.press_angle)
         time.sleep(duration)
         PWM.set_duty_cycle(self.finger_servo_pin,self.up_angle)
-    
+        print("Key pressed for {} seconds".format(time.time()-s))
     def volume_adjust(self, v):
         dc = 41*v+9
         PWM.set_duty_cycle(self.vol_servo_pin,dc)
@@ -143,7 +158,7 @@ class Gantry:
         distance_to_move = []
         # direction = []
         for k in key_list:
-            distance_to_move.append((k*14.38653846)+373.14873846)
+            distance_to_move.append((k*13.5)+489.46)
             # self.prev_set = temp
         return distance_to_move
     
@@ -168,7 +183,7 @@ class Gantry:
                 self.previous_key = k
                 self.press_key(press_t)
             else:
-                time.sleep(t)
+                # time.sleep(t)
                 self.previous_key = self.previous_key
                 
         
