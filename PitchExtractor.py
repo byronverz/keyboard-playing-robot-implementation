@@ -29,7 +29,8 @@ def amdf_PE(inputWindow):
         offset = np.argmax(D_tau[c])
         minIndices[c] = (c*128+offset)+np.argmin(D_tau[c,offset:-1])
         freq[c] = (44100/(minIndices[c]-(c*128)))
-        vol[c] = 20*np.log10(np.mean(np.abs(inputWindow))) - 96.3
+        # vol[c] = 20*np.log10(np.mean(np.abs(inputWindow))) - 96.3
+        vol[c] = np.mean(np.abs(inputWindow))
     
     return freq, vol
 

@@ -167,7 +167,7 @@ class Gantry:
         return distance_to_move
     
     def time_to_move(self, key_list, vol_list, k_times):
-        for k,  press_t in zip(key_list, k_times):
+        for k, v, press_t in zip(key_list, vol_list, k_times):
             # i = input("Enter to move to next key")
             print("Moving to key: {}".format(k))
             t = (((self.KEY_CONST*(k - self.previous_key)))/(self.max_freq*self.theta_m*self.radius))
@@ -179,7 +179,7 @@ class Gantry:
                 # print("Moving right")
                 GPIO.output(self.direction,GPIO.LOW)
             t = np.abs(t)
-            # self.volume_adjust(v)
+            self.volume_adjust(v)
             # if t<=0.15:
             #     print("Short move")
             if k >= 0:

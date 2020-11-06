@@ -76,6 +76,8 @@ def cadence_controller(keys_arr, vols_arr):
             out_key_list.append(out_key)
             out_time.append(curr_key_time+0.0625)
 
+
+
 def main():
     global out_key_list, out_vol_list, out_time
     whistle_pin = "P8_15"
@@ -128,6 +130,7 @@ def main():
     # out_vol_list = [0.9,0.5,0.9,0.5,0.9]
     # out_time = [0.5,0.25,0.25,0.75,0.75]
     # d_to_move = g.distance_to_move_calc(out_key_list)
+    input("Play audio")
     g.time_to_move(out_key_list, out_vol_list, out_time)
     # dist = []
     # freq = []
