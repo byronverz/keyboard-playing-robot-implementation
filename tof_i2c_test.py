@@ -51,8 +51,8 @@ for i in range(404):
     time.sleep(0.01)
     mySensor.stop_ranging()
 print(np.mean(var_test))
-with open('step_setpoint_results.csv','w') as sp:
-    np.savetxt(sp, var_test, fmt = '%10.3f', delimiter = ',')
+# with open('step_setpoint_results.csv','w') as sp:
+    # np.savetxt(sp, var_test, fmt = '%10.3f', delimiter = ',')
 # key_measures = []
 # for k in range(25):
 #     ready = input("Measuring distance for key {}: ".format(k))

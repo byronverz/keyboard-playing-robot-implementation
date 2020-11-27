@@ -7,7 +7,7 @@ import random
 
 
 class Gantry:
-    def __init__(self, calibrate_k = 0, sensor_address = 0x29, stepper_pwm = 'P8_13', en_pin = 'P8_7', dir_pin = 'P8_8', finger_servo='P9_14', vol_servo = 'P9_16'):
+    def __init__(self, calibrate_k = 0, sensor_address = 0x29, stepper_pwm = 'P8_13', en_pin = 'P8_7', dir_pin = 'P8_8', finger_servo='P9_14', vol_servo = 'P9_16', mode1='P8_10',mode2='P8_12',mode3='P8_14'):
         self.calibration_key = calibrate_k
         # self.previous_key = 0
         self.mySensor = qwiic_vl53l1x.QwiicVL53L1X(address = sensor_address)
@@ -17,19 +17,32 @@ class Gantry:
         self.direction = dir_pin
         self.finger_servo_pin = finger_servo
         self.vol_servo_pin = vol_servo
-        self.home_set_point = 482.27+7   #make this a calculation from key to distance
-        self.max_freq = 1500.0
+        self.mode1 = mode1
+        self.mode2 = mode2
+        self.mode3 = mode3
+        self.home_set_point = 414.6135265700483+22.5
+        self.max_freq = 1380.0
         self.last = 0
-        self.up_angle = 22
-        self.press_angle = 16
-        self.KEY_CONST = 13.25
-        self.theta_m = 0.45*(np.pi/180)
+        self.up_angle = 25
+        self.press_angle_natural = 17
+        self.press_angle_sharp = 17
+        self.KEY_CONST = 13.38
+        self.theta_m = (1.8/4)*(np.pi/180)
         self.radius = 37.5
         self.freq_curve = [6, 342, 888, 1459 ,1947, 2308, self.max_freq]
+        self.natural = [0,2,4,6,7,9,11,12,14,16,18,19,21,23,24]
+        self.sharp = [1,3,5,8,10,13,15,17,20,22]
         GPIO.setup(self.direction, GPIO.OUT)
         GPIO.setup(self.enable, GPIO.OUT)
+        GPIO.setup(self.mode1,GPIO.OUT)
+        GPIO.setup(self.mode2,GPIO.OUT)
+        GPIO.setup(self.mode3,GPIO.OUT)
+
 
         GPIO.output(self.enable,GPIO.LOW)
+        GPIO.output(self.mode1,GPIO.LOW)
+        GPIO.output(self.mode2,GPIO.HIGH)
+        GPIO.output(self.mode3,GPIO.LOW)
         PWM.start(self.finger_servo_pin,self.up_angle,200)
         PWM.start(self.vol_servo_pin,32,200)
 
@@ -132,7 +145,7 @@ class Gantry:
         
         PWM.stop(self.pwm_pin)
         self.last = set_point
-        self.press_key(k_time)
+        self.press_key(k_time,0)
         return np.array(dist_out), np.array(freq_out), np.array(error_out)
     
     
@@ -143,18 +156,25 @@ class Gantry:
             return True
         
         
-    def press_key(self, duration):
-        # s = time.time()
-        PWM.set_duty_cycle(self.finger_servo_pin,self.press_angle)
-        time.sleep(duration)
-        PWM.set_duty_cycle(self.finger_servo_pin,self.up_angle)
-        # print("Key pressed for {} seconds".format(time.time()-s))
+    def press_key(self, duration,k):
+        # print("Play key")
+        if k in self.sharp:
+            # print("Sharp key")
+            PWM.set_duty_cycle(self.finger_servo_pin,self.press_angle_sharp)
+            time.sleep(duration)
+            PWM.set_duty_cycle(self.finger_servo_pin,self.up_angle)
+        else:
+            # print("Natural key")
+            PWM.set_duty_cycle(self.finger_servo_pin,self.press_angle_natural)
+            time.sleep(duration)
+            PWM.set_duty_cycle(self.finger_servo_pin,self.up_angle)
+        
         
         
     def volume_adjust(self, v):
         dc = -35*v+49
         PWM.set_duty_cycle(self.vol_servo_pin,dc)
-        print("Volume set")
+        # print("Volume set to {}%".format(v))
         
         
     def distance_to_move_calc(self,key_list):
@@ -169,7 +189,7 @@ class Gantry:
     def time_to_move(self, key_list, vol_list, k_times):
         for k, v, press_t in zip(key_list, vol_list, k_times):
             # i = input("Enter to move to next key")
-            print("Moving to key: {}".format(k))
+            # print("Moving to key: {}".format(k))
             t = (((self.KEY_CONST*(k - self.previous_key)))/(self.max_freq*self.theta_m*self.radius))
             # print(t)
             if t<0:
@@ -182,14 +202,14 @@ class Gantry:
             self.volume_adjust(v)
             # if t<=0.15:
             #     print("Short move")
-            if k >= 0:
+            if (k >= 0) and (k < 25.0):
                 PWM.start(self.pwm_pin,50, self.max_freq)
                 time.sleep(t)
                 PWM.stop(self.pwm_pin)
                 self.previous_key = k
-                self.press_key(press_t)
+                self.press_key(press_t,k)
             else:
-                # time.sleep(t)
+                
                 self.previous_key = self.previous_key
             # elif t>0.15:
             #     print("Long move")
@@ -206,7 +226,7 @@ class Gantry:
             #             time.sleep(0.01)
             #         PWM.stop(self.pwm_pin)
             #         self.previous_key = k
-            #         self.press_key(press_t)
+            #         self.press_key(press_t,k)
             #     else:
             #         # time.sleep(t)
             #         self.previous_key = self.previous_key

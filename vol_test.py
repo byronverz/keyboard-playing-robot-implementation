@@ -17,10 +17,20 @@ def volume_adjust(v):
     dc = -35*v+49
     PWM.set_duty_cycle(servo_pin,dc)
     print("Volume set")
-        
+
+def press_key(angle):
+    # s = time.time()
+    PWM.set_duty_cycle(servo_pin,angle)
+    time.sleep(1)
+    PWM.set_duty_cycle(servo_pin,22)
+    # print("Key pressed for {} seconds".format(time.time()-s))
+    
  
 io = 0.5
 while io !='x':
     
     volume_adjust(float(io))
-    io = input("Volume: ")
+    # press_key(float(io))
+    io = input("Angle: ")
+
+PWM.cleanup()
